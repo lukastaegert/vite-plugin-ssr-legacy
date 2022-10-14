@@ -1,8 +1,8 @@
-import execa from "execa";
 import glob from "fast-glob";
 import { readFile, writeFile } from "fs/promises";
 import { join } from "path";
 import { applyHtmlTransforms } from "./applyHtmlTransforms.js";
+import { prerender } from "vite-plugin-ssr/prerender";
 
 export default function generateHtml(legacyPlugin) {
   let isClient = false;
@@ -26,8 +26,7 @@ export default function generateHtml(legacyPlugin) {
     async closeBundle() {
       if (!isClient) return;
       console.log(`ℹ️ [Generate HTML] Start HTML prerendering`);
-      const { stderr } = await execa("vite-plugin-ssr", ["prerender"]);
-      console.log(stderr);
+      await prerender();
       console.log(`ℹ️ [Generate HTML] HTML Prerendering finished`);
       await transformHtml(outputDir, legacyPlugin);
     },
@@ -52,8 +51,8 @@ async function transformHtml(outputDir, legacyPlugin) {
 async function prepareHtmlTransform(outputDir, legacyPlugin) {
   const [fileNames, pageChunks, legacyPageChunks] = await Promise.all([
     glob("./**/*.html", { cwd: outputDir }),
-    glob("./**/_default.page.client.js.*.js", { cwd: outputDir }),
-    glob("./**/_default.page.client.js-legacy.*.js", { cwd: outputDir }),
+    glob("./**/entry-server-routing.*.js", { cwd: outputDir }),
+    glob("./**/entry-server-routing-legacy.*.js", { cwd: outputDir }),
   ]);
   if (pageChunks.length !== 1 || legacyPageChunks.length !== 1) {
     throw new Error("Could not find page chunks");

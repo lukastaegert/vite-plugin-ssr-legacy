@@ -1,5 +1,5 @@
 const express = require("express");
-const { createPageRenderer } = require("vite-plugin-ssr");
+const { renderPage } = require("vite-plugin-ssr");
 
 const root = `${__dirname}/..`;
 
@@ -8,23 +8,18 @@ startServer();
 async function startServer() {
   const app = express();
 
-  let viteDevServer;
   const vite = require("vite");
-  viteDevServer = await vite.createServer({
-    root,
-    server: { middlewareMode: "ssr" },
-  });
-  app.use(viteDevServer.middlewares);
+  const viteDevMiddleware = (
+    await vite.createServer({
+      root,
+      server: { middlewareMode: true },
+    })
+  ).middlewares;
+  app.use(viteDevMiddleware);
 
-  const renderPage = createPageRenderer({
-    viteDevServer,
-    isProduction: false,
-    root,
-  });
   app.get("*", async (req, res, next) => {
-    const url = req.originalUrl;
     const pageContextInit = {
-      url,
+      urlOriginal: req.originalUrl,
     };
     const pageContext = await renderPage(pageContextInit);
     const { httpResponse } = pageContext;
