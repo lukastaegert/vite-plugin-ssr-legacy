@@ -13,6 +13,7 @@
     "cross-env": "^7.0.3",
     "execa": "^5.1.1",
     "express": "^4.17.3",
+    "fast-glob": "^3.2.12",
     "prettier": "^2.7.1",
     "sirv-cli": "^2.0.2",
     "vite": "^2.8.4",
